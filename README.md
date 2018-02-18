@@ -13,3 +13,8 @@ A collection of deep learning scripts covering a range of techniques within a ra
 * Keras
 * Tensorflow
 * Pytorch
+
+#### Applications
+* Machine Vision
+* Natural Language Processing
+* Audio/Video processing
