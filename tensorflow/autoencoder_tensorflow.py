@@ -1,4 +1,5 @@
-# https://github.com/aymericdamien/TensorFlow-Examples/blob/master/notebooks/3_NeuralNetworks/autoencoder.ipynb
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 """
 ########################
