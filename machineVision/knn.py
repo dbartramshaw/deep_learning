@@ -6,16 +6,19 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report
-from ImageUtils.preprocessing import SimplePreprocessor
-from ImageUtils.datasets import SimpleDatasetLoader
+from pyimagesearch.preprocessing import SimplePreprocessor
+from pyimagesearch.datasets import SimpleDatasetLoader
 from imutils import paths
 import argparse
 
 # construct the argument parse and parse the arguments
 ap = argparse.ArgumentParser()
-ap.add_argument("-d", "--dataset", required=True, help="path to input dataset")
-ap.add_argument("-k", "--neighbors", type=int, default=1,help="# of nearest neighbors for classification")
-ap.add_argument("-j", "--jobs", type=int, default=-1, help="# of jobs for k-NN distance (-1 uses all available cores)")
+ap.add_argument("-d", "--dataset", required=True,
+	help="path to input dataset")
+ap.add_argument("-k", "--neighbors", type=int, default=1,
+	help="# of nearest neighbors for classification")
+ap.add_argument("-j", "--jobs", type=int, default=-1,
+	help="# of jobs for k-NN distance (-1 uses all available cores)")
 args = vars(ap.parse_args())
 
 # grab the list of images that we'll be describing
