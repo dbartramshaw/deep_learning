@@ -4,37 +4,46 @@ import cv2
 import os
 
 class SimpleDatasetLoader:
+	"""
+		loads in defined preProcessors
+		Currently labels based on file name or folder name
+	"""
 	def __init__(self, preprocessors=None):
 		# store the image preprocessor
 		self.preprocessors = preprocessors
 
-		# if the preprocessors are None, initialize them as an
-		# empty list
+		# if the preprocessors are None, initialize them as an empty list
 		if self.preprocessors is None:
 			self.preprocessors = []
 
-	def load(self, imagePaths, verbose=-1):
+	def load(self, imagePaths, verbose=-1, labels = "folder"):
+		"""
+			labels:  "folder" or "file"
+		"""
 		# initialize the list of features and labels
 		data = []
 		labels = []
 
 		# loop over the input images
 		for (i, imagePath) in enumerate(imagePaths):
-			# load the image and extract the class label assuming
-			# that our path has the following format:
+			# load the image and extract the class label assuming that our path has the following format:
 			# /path/to/dataset/{class}/{image}.jpg
 			image = cv2.imread(imagePath)
-			label = imagePath.split(os.path.sep)[-2]
+			if labels == "folder":
+				label = imagePath.split(os.path.sep)[-2]
+			elif labels == "file":
+				label = imagePath.split(os.path.sep)[-1]
+			else:
+				print('labels must be either "folder" or "file"')
+
 
 			# check to see if our preprocessors are not None
 			if self.preprocessors is not None:
-				# loop over the preprocessors and apply each to
-				# the image
+				# loop over the preprocessors and apply each to the image
 				for p in self.preprocessors:
 					image = p.preprocess(image)
 
-			# treat our processed image as a "feature vector"
-			# by updating the data list followed by the labels
+			# treat our processed image as a "feature vector" by updating the data list followed by the labels
 			data.append(image)
 			labels.append(label)
 
