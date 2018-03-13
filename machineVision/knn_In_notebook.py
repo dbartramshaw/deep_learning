@@ -28,7 +28,7 @@ imagePaths[0:5]
 # initialize the image preprocessor, load the dataset from disk, and reshape the data matrix
 sp = SimplePreprocessor(32, 32)
 sdl = SimpleDatasetLoader(preprocessors=[sp])
-(data, labels) = sdl.load(imagePaths, verbose=500, labels = "folder")
+(data, labels) = sdl.load(imagePaths, verbose=500, label_type = "folder")
 data = data.reshape((data.shape[0], 32*32*3))
 
 # show some information on memory consumption of the images

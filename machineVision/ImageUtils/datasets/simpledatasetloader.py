@@ -16,7 +16,7 @@ class SimpleDatasetLoader:
 		if self.preprocessors is None:
 			self.preprocessors = []
 
-	def load(self, imagePaths, verbose=-1, labels = "folder"):
+	def load(self, imagePaths, verbose=-1, label_type = "folder"):
 		"""
 			labels:  "folder" or "file"
 		"""
@@ -29,9 +29,9 @@ class SimpleDatasetLoader:
 			# load the image and extract the class label assuming that our path has the following format:
 			# /path/to/dataset/{class}/{image}.jpg
 			image = cv2.imread(imagePath)
-			if labels == "folder":
+			if label_type == "folder":
 				label = imagePath.split(os.path.sep)[-2]
-			elif labels == "file":
+			elif label_type == "file":
 				label = imagePath.split(os.path.sep)[-1]
 			else:
 				print('labels must be either "folder" or "file"')
