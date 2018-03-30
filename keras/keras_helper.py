@@ -39,7 +39,6 @@ input_shape = Input(shape=(dimentions,window_size,1), name='input_name')
 x = BatchNormalization()(input_shape)
 
 
-
 #----------------------------
 # Conv2D (Add)
 model.add(Conv2D(conv_feat_map, kernel_size=(1, 5),activation='relu',padding='same'))
@@ -55,10 +54,64 @@ model.add(Dropout(0.5))
 x = Dropout(0.5)(x)
 
 
-
 #----------------------------
 # Swapping Dimentions (Add)
 model.add(Permute((2, 1, 3)))
 
 # Swapping Dimentions (Assign)
 x = Permute((2, 1, 3))(x)
+
+
+
+
+###################################
+# Checkpointer - save best model
+###################################
+checkpointer = ModelCheckpoint(filepath="Efusion_fp_aud_dominance.hdf5"
+                             , monitor='val_mean_squared_error' #Change to required metric
+                             , verbose=1
+                             , save_best_only=True)
+
+y_train.shape
+H = model.fit(x_train, y_train,
+            batch_size=batch_size,
+            epochs=epochs,
+            verbose=1,
+            shuffle=True,
+            validation_data=(x_test, y_test)
+            ,callbacks=[checkpointer]
+
+
+
+###################################
+# Linear Predicitons
+###################################
+output = Dense(1, activation='linear')(z)
+model = Model(inputs=input_1, outputs=output)
+model.compile(loss=keras.losses.mean_squared_error,
+              optimizer='adam',
+              metrics=['mse'])
+
+
+
+###################################
+# Multiple Inputs
+###################################
+input_1 = Input(shape=(feat_dim,WINDOW_SIZE,1), name='X_train_images')
+x = BatchNormalization()(input_1)
+x = ...
+
+input_2 = Input(shape=(timesteps, data_dim), name='X_train_audio')
+x = BatchNormalization()(input_2)
+x = ...
+
+model = Model(inputs=[input_1, input_2], outputs=output)
+
+H = model.fit([x_train_images, x_train_audio], y_train,
+            batch_size=batch_size,
+            epochs=epochs,
+            verbose=1,
+            shuffle=True,
+            validation_data=([x_train_images, x_test_audio], y_test)
+            ,callbacks=[checkpointer]
+            )
