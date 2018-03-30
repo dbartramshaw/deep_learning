@@ -1,4 +1,4 @@
-=#!/usr/bin/env python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 """
@@ -77,8 +77,11 @@ test_labels = np_utils.to_categorical(test_labels, num_classes)
 test_labels[0:10]
 
 
-
+########################
 # MODEL STRUCTURE
+# Sequential: .add
+########################
+
 # Define a Neural Network Model with a Single Hidden Layer
 def simple_nn():
     # initialize model
@@ -96,7 +99,20 @@ def simple_nn():
     return model
 
 
-# DEFINE MODEL
+########################
+# MODEL STRUCTURE
+# Sequential: assign x
+########################
+# model = Sequential()
+# layer1 = Dense(100, activation='sigmoid')(x)
+# output = Dense(num_classes, activation='softmax')(layer1)
+#
+
+
+########################
+# RUN MODEL
+########################
+
 model = simple_nn()
 # define optimizer
 sgd = SGD(lr=0.01)
