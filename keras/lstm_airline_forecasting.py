@@ -74,7 +74,7 @@ def create_dataset(dataset, look_back=1):
 numpy.random.seed(7)
 
 # load the dataset
-dataframe = read_csv('international-airline-passengers.csv', usecols=[1], engine='python', skipfooter=3)
+dataframe = read_csv('test_code/international-airline-passengers.csv', usecols=[1], engine='python', skipfooter=3)
 dataset = dataframe.values
 dataset = dataset.astype('float32')
 
