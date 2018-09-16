@@ -1,117 +1,11 @@
 # -*- coding: utf-8 -*-
 """
+=============================
 Neural Transfer with PyTorch
-============================
-**Author**: `Alexis Jacq <https://alexis-jacq.github.io>`_
+=============================
 
-Introduction
-------------
-
-Welcome! This tutorial explains how to impletment the
-`Neural-Style <https://arxiv.org/abs/1508.06576>`__ algorithm developed
-by Leon A. Gatys, Alexander S. Ecker and Matthias Bethge.
-
-Neural what?
-~~~~~~~~~~~~
-
-The Neural-Style, or Neural-Transfer, is an algorithm that takes as
-input a content-image (e.g. a turtle), a style-image (e.g. artistic
-waves) and return the content of the content-image as if it was
-'painted' using the artistic style of the style-image:
-
-.. figure:: /_static/img/neural-style/neuralstyle.png
-   :alt: content1
-
-How does it work?
-~~~~~~~~~~~~~~~~~
-
-The principle is simple: we define two distances, one for the content
-(:math:`D_C`) and one for the style (:math:`D_S`). :math:`D_C` measures
-how different the content is between two images, while :math:`D_S`
-measures how different the style is between two images. Then, we take a
-third image, the input, (e.g. a with noise), and we transform it in
-order to both minimize its content-distance with the content-image and
-its style-distance with the style-image.
-
-OK. How does it work?
-^^^^^^^^^^^^^^^^^^^^^
-
-Well, going further requires some mathematics. Let :math:`C_{nn}` be a
-pre-trained deep convolutional neural network and :math:`X` be any
-image. :math:`C_{nn}(X)` is the network fed by :math:`X` (containing
-feature maps at all layers). Let :math:`F_{XL} \in C_{nn}(X)` be the
-feature maps at depth layer :math:`L`, all vectorized and concatenated
-in one single vector. We simply define the content of :math:`X` at layer
-:math:`L` by :math:`F_{XL}`. Then, if :math:`Y` is another image of same
-the size than :math:`X`, we define the distance of content at layer
-:math:`L` as follow:
-
-.. math:: D_C^L(X,Y) = \|F_{XL} - F_{YL}\|^2 = \sum_i (F_{XL}(i) - F_{YL}(i))^2
-
-Where :math:`F_{XL}(i)` is the :math:`i^{th}` element of :math:`F_{XL}`.
-The style is a bit less trivial to define. Let :math:`F_{XL}^k` with
-:math:`k \leq K` be the vectorized :math:`k^{th}` of the :math:`K`
-feature maps at layer :math:`L`. The style :math:`G_{XL}` of :math:`X`
-at layer :math:`L` is defined by the Gram produce of all vectorized
-feature maps :math:`F_{XL}^k` with :math:`k \leq K`. In other words,
-:math:`G_{XL}` is a :math:`K`\ x\ :math:`K` matrix and the element
-:math:`G_{XL}(k,l)` at the :math:`k^{th}` line and :math:`l^{th}` column
-of :math:`G_{XL}` is the vectorial produce between :math:`F_{XL}^k` and
-:math:`F_{XL}^l` :
-
-.. math::
-
-    G_{XL}(k,l) = \langle F_{XL}^k, F_{XL}^l\\rangle = \sum_i F_{XL}^k(i) . F_{XL}^l(i)
-
-Where :math:`F_{XL}^k(i)` is the :math:`i^{th}` element of
-:math:`F_{XL}^k`. We can see :math:`G_{XL}(k,l)` as a measure of the
-correlation between feature maps :math:`k` and :math:`l`. In that way,
-:math:`G_{XL}` represents the correlation matrix of feature maps of
-:math:`X` at layer :math:`L`. Note that the size of :math:`G_{XL}` only
-depends on the number of feature maps, not on the size of :math:`X`.
-Then, if :math:`Y` is another image *of any size*, we define the
-distance of style at layer :math:`L` as follow:
-
-.. math::
-
-    D_S^L(X,Y) = \|G_{XL} - G_{YL}\|^2 = \sum_{k,l} (G_{XL}(k,l) - G_{YL}(k,l))^2
-
-In order to minimize in one shot :math:`D_C(X,C)` between a variable
-image :math:`X` and target content-image :math:`C` and :math:`D_S(X,S)`
-between :math:`X` and target style-image :math:`S`, both computed at
-several layers , we compute and sum the gradients (derivative with
-respect to :math:`X`) of each distance at each wanted layer:
-
-.. math::
-
-    \\nabla_{\textit{total}}(X,S,C) = \sum_{L_C} w_{CL_C}.\\nabla_{\textit{content}}^{L_C}(X,C) + \sum_{L_S} w_{SL_S}.\\nabla_{\textit{style}}^{L_S}(X,S)
-
-Where :math:`L_C` and :math:`L_S` are respectivement the wanted layers
-(arbitrary stated) of content and style and :math:`w_{CL_C}` and
-:math:`w_{SL_S}` the weights (arbitrary stated) associated with the
-style or the content at each wanted layer. Then, we run a gradient
-descent over :math:`X`:
-
-.. math:: X \leftarrow X - \\alpha \\nabla_{\textit{total}}(X,S,C)
-
-Ok. That's enough with maths. If you want to go deeper (how to compute
-the gradients) **we encourage you to read the original paper** by Leon
-A. Gatys and AL, where everything is much better and much clearer
-explained.
-
-For our implementation in PyTorch, we already have everything
-we need: indeed, with PyTorch, all the gradients are automatically and
-dynamically computed for you (while you use functions from the library).
-This is why the implementation of this algorithm becomes very
-comfortable with PyTorch.
 
 PyTorch implementation
-----------------------
-
-If you are not sure to understand all the mathematics above, you will
-probably get it by implementing it. If you are discovering PyTorch, we
-recommend you to first read this :doc:`Introduction to
-PyTorch </beginner/deep_learning_60min_blitz>`.
 
 Packages
 ~~~~~~~~
@@ -241,32 +135,6 @@ imshow(content_img, title='Content Image')
 ######################################################################
 # Content loss
 # ~~~~~~~~~~~~
-#
-# The content loss is a function that takes as input the feature maps
-# :math:`F_{XL}` at a layer :math:`L` in a network fed by :math:`X` and
-# returns the weigthed content distance :math:`w_{CL}.D_C^L(X,C)` between
-# this image and the content image. Hence, the weight :math:`w_{CL}` and
-# the target content :math:`F_{CL}` are parameters of the function. We
-# implement this function as a torch module with a constructor that takes
-# these parameters as input. The distance :math:`\|F_{XL} - F_{YL}\|^2` is
-# the Mean Square Error between the two sets of feature maps, that can be
-# computed using a criterion ``nn.MSELoss`` stated as a third parameter.
-#
-# We will add our content losses at each desired layer as additive modules
-# of the neural network. That way, each time we will feed the network with
-# an input image :math:`X`, all the content losses will be computed at the
-# desired layers and, thanks to autograd, all the gradients will be
-# computed. For that, we just need to make the ``forward`` method of our
-# module returning the input: the module becomes a ''transparent layer''
-# of the neural network. The computed loss is saved as a parameter of the
-# module.
-#
-# Finally, we define a fake ``backward`` method that just calls the
-# backward method of ``nn.MSELoss`` in order to reconstruct the gradient.
-# This method returns the computed loss: this will be useful when running
-# the gradient descent in order to display the evolution of style and
-# content losses.
-#
 
 class ContentLoss(nn.Module):
 
@@ -284,27 +152,8 @@ class ContentLoss(nn.Module):
 
 
 ######################################################################
-# .. Note::
-#    **Important detail**: this module, although it is named ``ContentLoss``,
-#    is not a true PyTorch Loss function. If you want to define your content
-#    loss as a PyTorch Loss, you have to create a PyTorch autograd Function
-#    and to recompute/implement the gradient by the hand in the ``backward``
-#    method.
-#
 # Style loss
 # ~~~~~~~~~~
-#
-# For the style loss, we need first to define a module that compute the
-# gram produce :math:`G_{XL}` given the feature maps :math:`F_{XL}` of the
-# neural network fed by :math:`X`, at layer :math:`L`. Let
-# :math:`\hat{F}_{XL}` be the re-shaped version of :math:`F_{XL}` into a
-# :math:`K`\ x\ :math:`N` matrix, where :math:`K` is the number of feature
-# maps at layer :math:`L` and :math:`N` the lenght of any vectorized
-# feature map :math:`F_{XL}^k`. The :math:`k^{th}` line of
-# :math:`\hat{F}_{XL}` is :math:`F_{XL}^k`. We let you check that
-# :math:`\hat{F}_{XL} \cdot \hat{F}_{XL}^T = G_{XL}`. Given that, it
-# becomes easy to implement our module:
-#
 
 def gram_matrix(input):
     a, b, c, d = input.size()  # a=batch size(=1)
@@ -319,18 +168,6 @@ def gram_matrix(input):
     # by dividing by the number of element in each feature maps.
     return G.div(a * b * c * d)
 
-
-######################################################################
-# The longer is the feature maps dimension :math:`N`, the bigger are the
-# values of the Gram matrix. Therefore, if we don't normalize by :math:`N`,
-# the loss computed at the first layers (before pooling layers) will have
-# much more importance during the gradient descent. We dont want that,
-# since the most interesting style features are in the deepest layers!
-#
-# Then, the style loss module is implemented exactly the same way than the
-# content loss module, but it compares the difference in Gram matrices of target
-# and input
-#
 
 class StyleLoss(nn.Module):
 
@@ -347,18 +184,6 @@ class StyleLoss(nn.Module):
 ######################################################################
 # Load the neural network
 # ~~~~~~~~~~~~~~~~~~~~~~~
-#
-# Now, we have to import a pre-trained neural network. As in the paper, we
-# are going to use a pretrained VGG network with 19 layers (VGG19).
-#
-# PyTorch's implementation of VGG is a module divided in two child
-# ``Sequential`` modules: ``features`` (containing convolution and pooling
-# layers) and ``classifier`` (containing fully connected layers). We are
-# just interested by ``features``:
-# Some layers have different behavior in training and in evaluation. Since we
-# are using it as a feature extractor. We will use ``.eval()`` to set the
-# network in evaluation mode.
-#
 
 cnn = models.vgg19(pretrained=True).features.to(device).eval()
 
@@ -366,7 +191,7 @@ cnn = models.vgg19(pretrained=True).features.to(device).eval()
 # Additionally, VGG networks are trained on images with each channel normalized
 # by mean=[0.485, 0.456, 0.406] and std=[0.229, 0.224, 0.225]. We will use them
 # to normalize the image before sending into the network.
-#
+
 
 cnn_normalization_mean = torch.tensor([0.485, 0.456, 0.406]).to(device)
 cnn_normalization_std = torch.tensor([0.229, 0.224, 0.225]).to(device)
